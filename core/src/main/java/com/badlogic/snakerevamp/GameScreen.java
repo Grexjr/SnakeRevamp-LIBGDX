@@ -10,6 +10,8 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.snakerevamp.obj.Apple;
+import com.badlogic.snakerevamp.obj.Snake;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -21,56 +23,26 @@ public class GameScreen implements Screen {
 
     private SnakeRevamp game;
 
-    private Texture snakeTexture;
-    private ArrayList<Sprite> bodySprites;
-    private ArrayList<Rectangle> bodyRectangles;
-    private ArrayList<Vector2> lastPositions;
+    private Snake snake;
 
-    private Texture appleTexture;
-    private Sprite appleSprite;
-    private Rectangle appleRectangle;
+    private Apple apple;
 
     private float dirX, dirY;
     private float moveTimer = 0f;
     private boolean isAppleColliding = false, gameOver = false, gameStarted = false;
+    private int score;
 
     public GameScreen(SnakeRevamp game) {
         this.game = game;
 
-        // Build the body texture
-        Pixmap bodyMap = new Pixmap(1, 1, Pixmap.Format.RGB888);
-        bodyMap.setColor(Color.WHITE);
-        bodyMap.fill();
+        // Define the snake object
+        snake = new Snake();
 
-        // Apply body texture
-        snakeTexture = new Texture(bodyMap);
-        bodyMap.dispose();
+        // Define the apple object
+        apple = new Apple();
 
-        // Create a body of sprites and rectangles
-        bodySprites = new ArrayList<>();
-        bodyRectangles = new ArrayList<>();
-        lastPositions = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            Sprite segment = new Sprite(snakeTexture);
-            segment.setSize(1, 1);
-            bodySprites.add(segment);
-            bodyRectangles.add(new Rectangle());
-        }
-
-        // Create apple texture
-        Pixmap appleMap = new Pixmap(1, 1, Pixmap.Format.RGB888);
-        appleMap.setColor(Color.RED);
-        appleMap.fill();
-
-        // Apply apple texture
-        appleTexture = new Texture(appleMap);
-        appleMap.dispose();
-
-        // Create apple sprite and rectangle
-        appleSprite = new Sprite(appleTexture);
-        appleSprite.setSize(1, 1);
-        appleRectangle = new Rectangle();
-
+        // Set default for score
+        score = 0;
     }
 
     @Override
@@ -81,45 +53,13 @@ public class GameScreen implements Screen {
         float worldCenterX = worldWidth / 2;
         float worldCenterY = worldHeight / 2;
 
-        // Set position of snake to center of world -- need some way to stop the white box at bottom left of screen
-        bodySprites.get(0).setPosition(
-            worldCenterX - bodySprites.get(0).getWidth(),
-            worldCenterY - bodySprites.get(0).getHeight()
-        );
-        bodyRectangles.get(0).set(
-            worldCenterX - bodySprites.get(0).getWidth(),
-            worldCenterY - bodySprites.get(0).getHeight(),
-            bodySprites.get(0).getWidth(),
-            bodySprites.get(0).getHeight()
-        );
-
-        // Initialize body to offscreen at first
-        for (int i = 1; i < bodySprites.size(); i++) {
-            bodySprites.get(i).setPosition(
-                -999,
-                999
-            );
-        }
-        // Initialize rectangles of body to offscreen
-        for (int i = 1; i < bodyRectangles.size(); i++) {
-            bodyRectangles.get(i).set(
-                -999,
-                999,
-                bodySprites.get(i).getWidth(),
-                bodySprites.get(i).getHeight()
-            );
-        }
+        // Initialize the snake | TODO: Undo the hard coding of 1 and use the sprite width
+        snake.initSnake(worldCenterX - snake.getSprite().getWidth(),worldCenterY - snake.getSprite().getHeight());
 
         // Set position of apple randomly
-        appleSprite.setPosition(
-            RANDOM.nextInt(0, Math.round(worldWidth)),
-            RANDOM.nextInt(0, Math.round(worldHeight))
-        );
-        appleRectangle.set(
-            appleSprite.getX(),
-            appleSprite.getY(),
-            appleSprite.getWidth(),
-            appleSprite.getHeight()
+        apple.randomizePosition(
+            RANDOM.nextInt(0,Math.round(worldWidth)),
+            RANDOM.nextInt(0,Math.round(worldHeight))
         );
 
     }
@@ -164,134 +104,60 @@ public class GameScreen implements Screen {
         float worldWidth = game.viewport.getWorldWidth();
         float worldHeight = game.viewport.getWorldHeight();
 
-        Sprite head = bodySprites.get(0);
-        Rectangle headRect = bodyRectangles.get(0);
-
         if (!gameOver) {
             moveTimer += delta;
 
             if (moveTimer > MOVE_INTERVAL) {
                 moveTimer -= MOVE_INTERVAL;
 
-                // Clear and save all old positions before moving anything
-                lastPositions.clear();
-                for (Sprite s : bodySprites) {
-                    lastPositions.add(new Vector2(s.getX(), s.getY()));
-                }
-
-
-                // Move head sprite and update rectangle to sprite location
-                head.setPosition(
-                    head.getX() + dirX,
-                    head.getY() + dirY
-                );
-                headRect.set(
-                    head.getX(),
-                    head.getY(),
-                    head.getWidth(),
-                    head.getHeight()
-                );
-                System.out.println("Head Rectangle@(" + headRect.getX() + "," + headRect.getY() + ")");
+                // Move snake head
+                snake.moveHead(dirX,dirY,worldWidth,worldHeight);
 
                 // Run body collision code if game is started
                 if(gameStarted){
-                    for (int i = 1; i < bodyRectangles.size(); i++) {
-                        if (headRect.overlaps(bodyRectangles.get(i))) {
-                            System.out.println("Head collided with:" + bodyRectangles.get(i) + " rectangle: " + i);
-                            gameOver = true;
-                        }
-                    }
+                    gameOver = snake.runBodyCollisionCheck();
                 }
 
-                // Move the rest of the body and update rectangles
-                for (int i = bodySprites.size() - 1; i > 0; i--) {
-                    bodySprites.get(i).setPosition(
-                        lastPositions.get(i - 1).x,
-                        lastPositions.get(i - 1).y
-                    );
-                    bodyRectangles.get(i).set(
-                        lastPositions.get(i - 1).x,
-                        lastPositions.get(i - 1).y,
-                        bodySprites.get(i).getWidth(),
-                        bodySprites.get(i).getHeight()
-                    );
-                    System.out.println("BodyRectangle: " + i + "@(" + bodyRectangles.get(i).getX() + "," + bodyRectangles.get(i).getY() + ")");
-                }
-            }
-
-            // Wrap around code
-            if (head.getX() > worldWidth) {
-                head.setX(0);
-                headRect.setX(0);
-            }
-            if (head.getX() < 0) {
-                head.setX(worldWidth);
-                headRect.setX(worldWidth);
-            }
-            if (head.getY() > worldHeight) {
-                head.setY(0);
-                headRect.setY(0);
-            }
-            if (head.getY() < 0) {
-                head.setY(worldHeight);
-                headRect.setY(worldHeight);
-            }
+                // Move rest of body
+                snake.moveBody();
 
             // Code for running into apple
-            if (headRect.overlaps(appleRectangle)) {
+            if (snake.checkHeadOverlap(apple.getRectangle())) {
                 if (!isAppleColliding) {
-                    appleSprite.setPosition(
-                        RANDOM.nextInt(0, Math.round(worldWidth)),
-                        RANDOM.nextInt(0, Math.round(worldHeight))
-                    );
-                    appleRectangle.setPosition(
-                        appleSprite.getX(),
-                        appleSprite.getY()
+                    // Randomize position | TODO: Add check if its on snake body re-randomize
+                    apple.randomizePosition(
+                        RANDOM.nextInt(0,Math.round(worldWidth)),
+                        RANDOM.nextInt(0,Math.round(worldHeight))
                     );
                     isAppleColliding = true;
+                    score += 1;
 
-                    Sprite newBody = new Sprite(snakeTexture);
-                    bodySprites.add(newBody);
-                    // Hides it on the frames before its position is correctly updated
-                    newBody.setPosition(
-                        head.getX(),
-                        head.getY()
-                    );
-                    Rectangle newBodyRect = new Rectangle();
-                    bodyRectangles.add(newBodyRect);
-                    // Put rectangle at last part of tail
-                    newBodyRect.set(
-                        lastPositions.get(lastPositions.size() - 1).x,
-                        lastPositions.get(lastPositions.size() - 1).y,
-                        head.getWidth(),
-                        head.getHeight()
-                    );
+                    snake.addBodySegment();
                 }
             } else {
                 isAppleColliding = false;
             }
-
-
+            }
         }
-
     }
 
     private void draw() {
+
+        float worldHeight = game.viewport.getWorldHeight();
+
         ScreenUtils.clear(Color.DARK_GRAY);
         game.viewport.apply();
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
         game.batch.begin();
 
-        float worldWidth = game.viewport.getWorldWidth();
-        float worldHeight = game.viewport.getWorldHeight();
-
         // Draw snake
-        for (Sprite s : bodySprites) {
-            s.draw(game.batch);
-        }
+        snake.draw(game.batch);
 
         // Draw apple
-        appleSprite.draw(game.batch);
+        apple.draw(game.batch);
+
+        // Draw score in top right
+        game.font.draw(game.batch,Integer.toString(score),1,worldHeight);
 
         game.batch.end();
     }
@@ -323,6 +189,10 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        snake.dispose();
+        apple.dispose();
     }
+
+    //TODO: Make sure all disposal code is good and filled in, refactor to simplify away from all in game screen
+
 }
