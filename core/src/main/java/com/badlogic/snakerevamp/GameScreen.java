@@ -6,11 +6,10 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.snakerevamp.obj.Apple;
+import com.badlogic.snakerevamp.obj.OuterWallGroup;
 import com.badlogic.snakerevamp.obj.Snake;
 import com.badlogic.snakerevamp.obj.Wall;
 
-import java.awt.*;
-import java.util.ArrayList;
 import java.util.Random;
 
 public class GameScreen implements Screen {
@@ -24,8 +23,7 @@ public class GameScreen implements Screen {
 
     private Apple apple;
 
-    private ArrayList<Wall> outerWallSprites;// Wall that stays the same around edges of screen
-    private ArrayList<Wall> outerWallRectangles;
+    private OuterWallGroup outerWalls;
     //TODO: Figure out how to do random wall; maybe can keep them both in the same list--yeah totally can
 
     private float dirX, dirY;
@@ -43,8 +41,7 @@ public class GameScreen implements Screen {
         apple = new Apple();
 
         // Define wall arraylists
-        outerWallSprites = new ArrayList<>();
-        outerWallRectangles = new ArrayList<>();
+        outerWalls = new OuterWallGroup();
 
         // Set default for score
         score = 0;
@@ -59,7 +56,7 @@ public class GameScreen implements Screen {
         float worldCenterY = worldHeight / 2;
 
         // Initialize the snake
-        snake.initSnake(worldCenterX - snake.getSprite().getWidth(), worldCenterY - snake.getSprite().getHeight());
+        snake.initSnake(worldCenterX - snake.getHeadSprite().getWidth(), worldCenterY - snake.getHeadSprite().getHeight());
 
         // Set position of apple randomly
         apple.randomizePosition(
@@ -68,64 +65,7 @@ public class GameScreen implements Screen {
         );
 
         // Set position of outer wall | TODO: make sure apple doesn't spawn on wall, and add wall rectangles
-        for (int i = 0; i < 2; i++) {
-            switch (i) {
-                // First run; draw the top & bottom walls
-                case 0 -> {
-                    for (int j = 0; j < worldWidth; j++) {
-                        Wall w = new Wall();
-                        Wall w2 = new Wall();
-                        outerWallSprites.add(w);
-                        outerWallSprites.add(w2);
-                        outerWallRectangles.add(w);
-                        outerWallRectangles.add(w2);
-                        w.setSpritePosition(
-                            j,
-                            0
-                        );
-                        w2.setSpritePosition(
-                            j,
-                            worldHeight - 1
-                        );
-                        w.setRectanglePosition(
-                            j,
-                            0
-                        );
-                        w2.setRectanglePosition(
-                            j,
-                            worldHeight - 1
-                        );
-                    }
-                }
-                // Second run; draw the left & right walls
-                case 1 -> {
-                    for (int j = 0; j < worldHeight; j++) {
-                        Wall w = new Wall();
-                        Wall w2 = new Wall();
-                        outerWallSprites.add(w);
-                        outerWallSprites.add(w2);
-                        outerWallRectangles.add(w);
-                        outerWallRectangles.add(w2);
-                        w.setSpritePosition(
-                            0,
-                            j
-                        );
-                        w2.setSpritePosition(
-                            worldWidth - 1,
-                            j
-                        );
-                        w.setRectanglePosition(
-                            0,
-                            j
-                        );
-                        w2.setRectanglePosition(
-                            worldHeight - 1,
-                            j
-                        );
-                    }
-                }
-            }
-        }
+        outerWalls.initOuterWall(worldWidth,worldHeight);
 
     }
 
@@ -178,9 +118,14 @@ public class GameScreen implements Screen {
                 // Move snake head
                 snake.moveHead(dirX, dirY, worldWidth, worldHeight);
 
-                // Run body collision code if game is started
+                // Run collision code if game is started
                 if (gameStarted) {
+                    // Code for running into body
                     gameOver = snake.runBodyCollisionCheck();
+                    if(!gameOver)
+                    {// Code for running into wall
+                        gameOver = outerWalls.checkCollision(snake.getHeadRectangle());
+                    }
                 }
 
                 // Move rest of body
@@ -191,8 +136,9 @@ public class GameScreen implements Screen {
                     if (!isAppleColliding) {
                         // Randomize position | TODO: Add check if its on snake body re-randomize
                         apple.randomizePosition(
-                            RANDOM.nextInt(0, Math.round(worldWidth)),
-                            RANDOM.nextInt(0, Math.round(worldHeight))
+                            // Minus two so apples do not spawn on the wall
+                            RANDOM.nextInt(1, Math.round(worldWidth-2)),
+                            RANDOM.nextInt(1, Math.round(worldHeight-2))
                         );
                         isAppleColliding = true;
                         score += 1;
@@ -203,13 +149,8 @@ public class GameScreen implements Screen {
                     isAppleColliding = false;
                 }
 
-                // Code for running into wall
-                for(Wall w : outerWallRectangles){
-                    if(snake.checkHeadOverlap(w.getRectangle())){
-                        gameOver = true;
-                    }
-                }
             }
+
         }
     }
 
@@ -229,9 +170,7 @@ public class GameScreen implements Screen {
         apple.draw(game.batch);
 
         // Draw outer wall
-        for (Wall w : outerWallSprites) {
-            w.draw(game.batch);
-        }
+        outerWalls.draw(game.batch);
 
         // Draw score in top right
         game.font.draw(game.batch, Integer.toString(score), 1, worldHeight);
@@ -268,6 +207,7 @@ public class GameScreen implements Screen {
     public void dispose() {
         snake.dispose();
         apple.dispose();
+        outerWalls.dispose();
     }
 
     //TODO: Make sure all disposal code is good and filled in, refactor to simplify away from all in game screen

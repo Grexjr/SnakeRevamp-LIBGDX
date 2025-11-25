@@ -31,6 +31,8 @@ public class Wall {
         wallRectangle = new Rectangle();
     }
 
+    public Sprite getSprite(){return wallSprite;}
+
     public Rectangle getRectangle(){return wallRectangle;}
 
     public void setSpritePosition(float xPos, float yPos){
@@ -54,6 +56,11 @@ public class Wall {
     // Draw
     public void draw(SpriteBatch batch){
         wallSprite.draw(batch);
+    }
+
+    // Dispose method
+    public void dispose(){
+        wallTexture.dispose();
     }
 
 
