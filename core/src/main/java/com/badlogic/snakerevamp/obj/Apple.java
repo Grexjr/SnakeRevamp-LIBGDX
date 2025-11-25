@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 public class Apple {
 
@@ -28,6 +29,10 @@ public class Apple {
         appleSprite.setSize(1, 1);
         appleRectangle = new Rectangle();
     }
+
+    public Vector2 getPosition(){return new Vector2(appleSprite.getX(),appleSprite.getY());}
+
+    public Sprite getSprite(){return appleSprite;}
 
     public Rectangle getRectangle(){return appleRectangle;}
 

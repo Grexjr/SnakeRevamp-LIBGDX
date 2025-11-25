@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 public class Wall {
 
@@ -30,6 +31,8 @@ public class Wall {
         // Add rectangle
         wallRectangle = new Rectangle();
     }
+
+    public Vector2 getPosition(){return new Vector2(wallSprite.getX(),wallSprite.getY());}
 
     public Sprite getSprite(){return wallSprite;}
 

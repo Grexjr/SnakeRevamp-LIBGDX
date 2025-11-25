@@ -5,10 +5,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.snakerevamp.obj.Apple;
-import com.badlogic.snakerevamp.obj.OuterWallGroup;
-import com.badlogic.snakerevamp.obj.Snake;
-import com.badlogic.snakerevamp.obj.Wall;
+import com.badlogic.snakerevamp.obj.*;
 
 import java.util.Random;
 
@@ -24,7 +21,7 @@ public class GameScreen implements Screen {
     private Apple apple;
 
     private OuterWallGroup outerWalls;
-    //TODO: Figure out how to do random wall; maybe can keep them both in the same list--yeah totally can
+    private DynamicWallGroup dynamicWalls;
 
     private float dirX, dirY;
     private float moveTimer = 0f;
@@ -42,6 +39,7 @@ public class GameScreen implements Screen {
 
         // Define wall arraylists
         outerWalls = new OuterWallGroup();
+        dynamicWalls = new DynamicWallGroup();
 
         // Set default for score
         score = 0;
@@ -64,8 +62,11 @@ public class GameScreen implements Screen {
             RANDOM.nextInt(0, Math.round(worldHeight))
         );
 
-        // Set position of outer wall | TODO: make sure apple doesn't spawn on wall, and add wall rectangles
+        // Set position of outer wall
         outerWalls.initOuterWall(worldWidth,worldHeight);
+
+        // Set randomized positions of dynamic walls
+        dynamicWalls.initDynamicWalls(RANDOM,55,worldWidth-2,worldHeight-2);
 
     }
 
@@ -123,8 +124,10 @@ public class GameScreen implements Screen {
                     // Code for running into body
                     gameOver = snake.runBodyCollisionCheck();
                     if(!gameOver)
-                    {// Code for running into wall
+                    {
+                        // Code for running into wall
                         gameOver = outerWalls.checkCollision(snake.getHeadRectangle());
+                        gameOver = dynamicWalls.checkCollision(snake.getHeadRectangle());
                     }
                 }
 
@@ -140,7 +143,17 @@ public class GameScreen implements Screen {
                             RANDOM.nextInt(1, Math.round(worldWidth-2)),
                             RANDOM.nextInt(1, Math.round(worldHeight-2))
                         );
+
+                        // Check to ensure it does not overlap with a dynamic wall
+                        if(dynamicWalls.checkCollision(apple.getRectangle())){
+                            apple.randomizePosition(
+                                RANDOM.nextInt(1, Math.round(worldWidth-2)),
+                                RANDOM.nextInt(1, Math.round(worldHeight-2))
+                            );
+                        }
+
                         isAppleColliding = true;
+
                         score += 1;
 
                         snake.addBodySegment();
@@ -171,6 +184,9 @@ public class GameScreen implements Screen {
 
         // Draw outer wall
         outerWalls.draw(game.batch);
+
+        // Draw dynamic walls
+        dynamicWalls.draw(game.batch);
 
         // Draw score in top right
         game.font.draw(game.batch, Integer.toString(score), 1, worldHeight);
