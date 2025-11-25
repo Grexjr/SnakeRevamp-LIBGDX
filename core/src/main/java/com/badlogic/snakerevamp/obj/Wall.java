@@ -37,6 +37,15 @@ public class Wall {
         wallSprite.setPosition(xPos,yPos);
     }
 
+    public void setRectanglePosition(float xPos, float yPos){
+        wallRectangle.set(
+            xPos,
+            yPos,
+            wallSprite.getWidth(),
+            wallSprite.getHeight()
+        );
+    }
+
     // When apple is collected, walls randomize
     public void randomizePosition(){
 

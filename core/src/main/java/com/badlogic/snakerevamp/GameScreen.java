@@ -9,6 +9,7 @@ import com.badlogic.snakerevamp.obj.Apple;
 import com.badlogic.snakerevamp.obj.Snake;
 import com.badlogic.snakerevamp.obj.Wall;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -43,6 +44,7 @@ public class GameScreen implements Screen {
 
         // Define wall arraylists
         outerWallSprites = new ArrayList<>();
+        outerWallRectangles = new ArrayList<>();
 
         // Set default for score
         score = 0;
@@ -75,11 +77,21 @@ public class GameScreen implements Screen {
                         Wall w2 = new Wall();
                         outerWallSprites.add(w);
                         outerWallSprites.add(w2);
+                        outerWallRectangles.add(w);
+                        outerWallRectangles.add(w2);
                         w.setSpritePosition(
                             j,
                             0
                         );
                         w2.setSpritePosition(
+                            j,
+                            worldHeight - 1
+                        );
+                        w.setRectanglePosition(
+                            j,
+                            0
+                        );
+                        w2.setRectanglePosition(
                             j,
                             worldHeight - 1
                         );
@@ -92,12 +104,22 @@ public class GameScreen implements Screen {
                         Wall w2 = new Wall();
                         outerWallSprites.add(w);
                         outerWallSprites.add(w2);
+                        outerWallRectangles.add(w);
+                        outerWallRectangles.add(w2);
                         w.setSpritePosition(
                             0,
                             j
                         );
                         w2.setSpritePosition(
                             worldWidth - 1,
+                            j
+                        );
+                        w.setRectanglePosition(
+                            0,
+                            j
+                        );
+                        w2.setRectanglePosition(
+                            worldHeight - 1,
                             j
                         );
                     }
@@ -182,7 +204,7 @@ public class GameScreen implements Screen {
                 }
 
                 // Code for running into wall
-                for(Wall w : outerWallSprites){
+                for(Wall w : outerWallRectangles){
                     if(snake.checkHeadOverlap(w.getRectangle())){
                         gameOver = true;
                     }
@@ -195,7 +217,7 @@ public class GameScreen implements Screen {
 
         float worldHeight = game.viewport.getWorldHeight();
 
-        ScreenUtils.clear(Color.DARK_GRAY);
+        ScreenUtils.clear(Color.BLACK);
         game.viewport.apply();
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
         game.batch.begin();
