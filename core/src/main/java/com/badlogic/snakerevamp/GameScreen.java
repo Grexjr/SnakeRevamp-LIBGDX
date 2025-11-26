@@ -63,7 +63,14 @@ public class GameScreen implements Screen {
         );
 
         // Set position of outer wall
-        outerWalls.initOuterWall(worldWidth,worldHeight);
+        outerWalls.initOuterWall(
+            worldWidth,
+            worldHeight,
+            worldWidth/2 - 1,
+            worldHeight/2 - 1,
+            3,
+            3
+        );
 
         // Set randomized positions of dynamic walls
         dynamicWalls.initDynamicWalls(RANDOM,55,worldWidth-2,worldHeight-2);

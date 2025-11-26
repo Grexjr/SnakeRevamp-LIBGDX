@@ -76,6 +76,137 @@ public class OuterWallGroup {
         }
     }
 
+    public void initOuterWall(float xBound, float yBound, float doorCenter, float doorWidth){
+        for (int i = 0; i < 2; i++) {
+            switch (i) {
+                // First run; draw the top & bottom walls with a gap for the door
+                case 0 -> {
+                    for (int j = 0; j < xBound; j++) {
+                        if(j < (doorCenter - doorWidth) || j > (doorCenter + doorWidth)){
+                            Wall w = new Wall();
+                            Wall w2 = new Wall();
+
+                            outerWalls.add(w);
+                            outerWalls.add(w2);
+
+                            w.setSpritePosition(
+                                j,
+                                0
+                            );
+                            w2.setSpritePosition(
+                                j,
+                                yBound - 1
+                            );
+                            w.setRectanglePosition(
+                                j,
+                                0
+                            );
+                            w2.setRectanglePosition(
+                                j,
+                                yBound - 1
+                            );
+                        }
+                    }
+                }
+                // Second run; draw the left & right walls
+                case 1 -> {
+                    for (int j = 0; j < yBound; j++) {
+                        if(j < doorCenter - doorWidth || j > doorCenter + doorWidth){
+                            Wall w = new Wall();
+                            Wall w2 = new Wall();
+
+                            outerWalls.add(w);
+                            outerWalls.add(w2);
+
+                            w.setSpritePosition(
+                                0,
+                                j
+                            );
+                            w2.setSpritePosition(
+                                xBound - 1,
+                                j
+                            );
+                            w.setRectanglePosition(
+                                0,
+                                j
+                            );
+                            w2.setRectanglePosition(
+                                xBound - 1,
+                                j
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void initOuterWall(float xBound, float yBound, float doorCenterX, float doorCenterY,
+                              float doorWidthX, float doorWidthY){
+        for (int i = 0; i < 2; i++) {
+            switch (i) {
+                // First run; draw the top & bottom walls with a gap for the door
+                case 0 -> {
+                    for (int j = 0; j < xBound; j++) {
+                        if(j < (doorCenterX - doorWidthX) || j > (doorCenterX + doorWidthX)){
+                            Wall w = new Wall();
+                            Wall w2 = new Wall();
+
+                            outerWalls.add(w);
+                            outerWalls.add(w2);
+
+                            w.setSpritePosition(
+                                j,
+                                0
+                            );
+                            w2.setSpritePosition(
+                                j,
+                                yBound - 1
+                            );
+                            w.setRectanglePosition(
+                                j,
+                                0
+                            );
+                            w2.setRectanglePosition(
+                                j,
+                                yBound - 1
+                            );
+                        }
+                    }
+                }
+                // Second run; draw the left & right walls
+                case 1 -> {
+                    for (int j = 0; j < yBound; j++) {
+                        if(j < doorCenterY - doorWidthY || j > doorCenterY + doorWidthY){
+                            Wall w = new Wall();
+                            Wall w2 = new Wall();
+
+                            outerWalls.add(w);
+                            outerWalls.add(w2);
+
+                            w.setSpritePosition(
+                                0,
+                                j
+                            );
+                            w2.setSpritePosition(
+                                xBound - 1,
+                                j
+                            );
+                            w.setRectanglePosition(
+                                0,
+                                j
+                            );
+                            w2.setRectanglePosition(
+                                xBound - 1,
+                                j
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // Check collision with a rectangle and any part of the outer wall
     public boolean checkCollision(Rectangle collider){
         boolean collision = false;
