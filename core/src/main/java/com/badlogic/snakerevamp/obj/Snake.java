@@ -39,9 +39,11 @@ public class Snake {
         }
     }
 
-    public Sprite getSprite(){
+    public Sprite getHeadSprite(){
         return bodySprites.get(0);
     }
+
+    public Rectangle getHeadRectangle(){return bodyRectangles.get(0);}
 
 
     // Initializes the snake's body sprites and rectangles

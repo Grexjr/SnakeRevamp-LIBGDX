@@ -4,16 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.snakerevamp.obj.Apple;
-import com.badlogic.snakerevamp.obj.Snake;
+import com.badlogic.snakerevamp.obj.*;
 
-import java.util.ArrayList;
 import java.util.Random;
 
 public class GameScreen implements Screen {
@@ -26,6 +19,9 @@ public class GameScreen implements Screen {
     private Snake snake;
 
     private Apple apple;
+
+    private OuterWallGroup outerWalls;
+    private DynamicWallGroup dynamicWalls;
 
     private float dirX, dirY;
     private float moveTimer = 0f;
@@ -41,6 +37,10 @@ public class GameScreen implements Screen {
         // Define the apple object
         apple = new Apple();
 
+        // Define wall arraylists
+        outerWalls = new OuterWallGroup();
+        dynamicWalls = new DynamicWallGroup();
+
         // Set default for score
         score = 0;
     }
@@ -53,14 +53,27 @@ public class GameScreen implements Screen {
         float worldCenterX = worldWidth / 2;
         float worldCenterY = worldHeight / 2;
 
-        // Initialize the snake | TODO: Undo the hard coding of 1 and use the sprite width
-        snake.initSnake(worldCenterX - snake.getSprite().getWidth(),worldCenterY - snake.getSprite().getHeight());
+        // Initialize the snake
+        snake.initSnake(worldCenterX - snake.getHeadSprite().getWidth(), worldCenterY - snake.getHeadSprite().getHeight());
 
         // Set position of apple randomly
         apple.randomizePosition(
-            RANDOM.nextInt(0,Math.round(worldWidth)),
-            RANDOM.nextInt(0,Math.round(worldHeight))
+            RANDOM.nextInt(0, Math.round(worldWidth)),
+            RANDOM.nextInt(0, Math.round(worldHeight))
         );
+
+        // Set position of outer wall
+        outerWalls.initOuterWall(
+            worldWidth,
+            worldHeight,
+            worldWidth/2 - 1,
+            worldHeight/2 - 1,
+            3,
+            3
+        );
+
+        // Set randomized positions of dynamic walls
+        dynamicWalls.initDynamicWalls(RANDOM,55,worldWidth-2,worldHeight-2);
 
     }
 
@@ -111,33 +124,53 @@ public class GameScreen implements Screen {
                 moveTimer -= MOVE_INTERVAL;
 
                 // Move snake head
-                snake.moveHead(dirX,dirY,worldWidth,worldHeight);
+                snake.moveHead(dirX, dirY, worldWidth, worldHeight);
 
-                // Run body collision code if game is started
-                if(gameStarted){
+                // Run collision code if game is started
+                if (gameStarted) {
+                    // Code for running into body
                     gameOver = snake.runBodyCollisionCheck();
+                    if(!gameOver)
+                    {
+                        // Code for running into wall
+                        gameOver = outerWalls.checkCollision(snake.getHeadRectangle());
+                        gameOver = dynamicWalls.checkCollision(snake.getHeadRectangle());
+                    }
                 }
 
                 // Move rest of body
                 snake.moveBody();
 
-            // Code for running into apple
-            if (snake.checkHeadOverlap(apple.getRectangle())) {
-                if (!isAppleColliding) {
-                    // Randomize position | TODO: Add check if its on snake body re-randomize
-                    apple.randomizePosition(
-                        RANDOM.nextInt(0,Math.round(worldWidth)),
-                        RANDOM.nextInt(0,Math.round(worldHeight))
-                    );
-                    isAppleColliding = true;
-                    score += 1;
+                // Code for running into apple
+                if (snake.checkHeadOverlap(apple.getRectangle())) {
+                    if (!isAppleColliding) {
+                        // Randomize position | TODO: Add check if its on snake body re-randomize
+                        apple.randomizePosition(
+                            // Minus two so apples do not spawn on the wall
+                            RANDOM.nextInt(1, Math.round(worldWidth-2)),
+                            RANDOM.nextInt(1, Math.round(worldHeight-2))
+                        );
 
-                    snake.addBodySegment();
+                        // Check to ensure it does not overlap with a dynamic wall
+                        if(dynamicWalls.checkCollision(apple.getRectangle())){
+                            apple.randomizePosition(
+                                RANDOM.nextInt(1, Math.round(worldWidth-2)),
+                                RANDOM.nextInt(1, Math.round(worldHeight-2))
+                            );
+                        }
+
+                        isAppleColliding = true;
+
+                        score += 1;
+
+                        snake.addBodySegment();
+                    }
+                } else {
+                    isAppleColliding = false;
                 }
-            } else {
-                isAppleColliding = false;
+
             }
-            }
+
         }
     }
 
@@ -145,7 +178,7 @@ public class GameScreen implements Screen {
 
         float worldHeight = game.viewport.getWorldHeight();
 
-        ScreenUtils.clear(Color.DARK_GRAY);
+        ScreenUtils.clear(Color.BLACK);
         game.viewport.apply();
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
         game.batch.begin();
@@ -156,8 +189,14 @@ public class GameScreen implements Screen {
         // Draw apple
         apple.draw(game.batch);
 
+        // Draw outer wall
+        outerWalls.draw(game.batch);
+
+        // Draw dynamic walls
+        dynamicWalls.draw(game.batch);
+
         // Draw score in top right
-        game.font.draw(game.batch,Integer.toString(score),1,worldHeight);
+        game.font.draw(game.batch, Integer.toString(score), 1, worldHeight);
 
         game.batch.end();
     }
@@ -191,6 +230,7 @@ public class GameScreen implements Screen {
     public void dispose() {
         snake.dispose();
         apple.dispose();
+        outerWalls.dispose();
     }
 
     //TODO: Make sure all disposal code is good and filled in, refactor to simplify away from all in game screen
