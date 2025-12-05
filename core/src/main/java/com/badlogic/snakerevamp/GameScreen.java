@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.snakerevamp.obj.*;
 
@@ -17,6 +18,9 @@ public class GameScreen implements Screen {
     private SnakeRevamp game;
 
     private Snake snake;
+
+    // Will eventually be arraylist
+    private Enemy enemy;
 
     private Apple apple;
 
@@ -33,6 +37,10 @@ public class GameScreen implements Screen {
 
         // Define the snake object
         snake = new Snake();
+
+        // Define the enemy object
+        enemy = new Enemy(3);
+        enemy.setDirX(1); //Just move to the right
 
         // Define the apple object
         apple = new Apple();
@@ -55,6 +63,9 @@ public class GameScreen implements Screen {
 
         // Initialize the snake
         snake.initSnake(worldCenterX - snake.getHeadSprite().getWidth(), worldCenterY - snake.getHeadSprite().getHeight());
+
+        // Initialize the enemy
+        enemy.initEnemy(10,10);
 
         // Set position of apple randomly
         apple.randomizePosition(
@@ -169,7 +180,16 @@ public class GameScreen implements Screen {
                     isAppleColliding = false;
                 }
 
+                // Move enemy in same movement counter as player--global movement counter
+                enemy.moveHead(worldWidth,worldHeight);
+                enemy.moveBody();
             }
+
+            enemy.castVision(4);
+            for(Rectangle r : outerWalls.getRectangles()){
+                enemy.turn(r);
+            }
+
 
         }
     }
@@ -185,6 +205,9 @@ public class GameScreen implements Screen {
 
         // Draw snake
         snake.draw(game.batch);
+
+        // Draw enemies
+        enemy.draw(game.batch);
 
         // Draw apple
         apple.draw(game.batch);
