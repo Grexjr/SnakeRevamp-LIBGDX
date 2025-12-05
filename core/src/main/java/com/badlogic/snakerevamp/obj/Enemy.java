@@ -10,8 +10,11 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Enemy {
+
+    private static final Random RAND = new Random();
 
     private Texture enemyTexture;
     private ArrayList<Sprite> bodySprites;
@@ -173,6 +176,80 @@ public class Enemy {
     public boolean checkHeadOverlap(Rectangle query){
         return bodyRectangles.get(0).overlaps(query);
     }
+
+
+    // Casting the vision
+    public void castVision(int distance){
+        // Clear the vision every time
+        clearVision();
+
+        for(int i = 0; i < distance; i++){
+            // Value for sight that does not include head tile
+            int add = i + 1;
+
+            //Casts vision in different direction depending on which way the snake is moving
+            if(dirX == 1){
+                // Look right
+                sight.add(new Vector2(getHeadSprite().getX() + add, getHeadSprite().getY()));
+            }
+            else if(dirY == 1){
+                // Look up
+                sight.add(new Vector2(getHeadSprite().getX(), getHeadSprite().getY() + add));
+            }
+            else if(dirX == -1){
+                // Look left
+                sight.add(new Vector2(getHeadSprite().getX() - add, getHeadSprite().getY()));
+            }
+            else if(dirY == -1){
+                // Look down
+                sight.add(new Vector2(getHeadSprite().getX(), getHeadSprite().getY() - add));
+            }
+        }
+    }
+
+    // Clearing the vision (to be done on turns)
+    public void clearVision(){
+        sight.clear();
+    }
+
+    // Iterate over sight to determine if it intersects with a rectangle -- only for player, for now walls just turn
+    public boolean iterateSight(Rectangle intersector){
+        for(Vector2 v : sight){
+            if(new Vector2(intersector.getX(), intersector.getY()).equals(v)){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // Turn method
+    public void turn(Rectangle wallRectangle){
+        if(iterateSight(wallRectangle)){
+            if(dirX != 0) {
+                dirX = 0;
+                // Turn random direction
+                if (RAND.nextBoolean()) {
+                    dirY = 1;
+                } else {
+                    dirY = -1;
+                }
+            } else if(dirY != 0){
+                dirY = 0;
+                // Turn random direction
+                if (RAND.nextBoolean()){
+                    dirX = 1;
+                } else {
+                    dirX = -1;
+                }
+            }
+        }
+    }
+
+
+
+
+
+
 
     // Draw the enemy method
     public void draw(SpriteBatch batch){

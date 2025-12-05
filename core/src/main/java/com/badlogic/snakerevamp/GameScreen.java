@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.snakerevamp.obj.*;
 
@@ -182,6 +183,11 @@ public class GameScreen implements Screen {
                 // Move enemy in same movement counter as player--global movement counter
                 enemy.moveHead(worldWidth,worldHeight);
                 enemy.moveBody();
+            }
+
+            enemy.castVision(4);
+            for(Rectangle r : outerWalls.getRectangles()){
+                enemy.turn(r);
             }
 
 
