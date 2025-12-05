@@ -18,6 +18,9 @@ public class GameScreen implements Screen {
 
     private Snake snake;
 
+    // Will eventually be arraylist
+    private Enemy enemy;
+
     private Apple apple;
 
     private OuterWallGroup outerWalls;
@@ -33,6 +36,10 @@ public class GameScreen implements Screen {
 
         // Define the snake object
         snake = new Snake();
+
+        // Define the enemy object
+        enemy = new Enemy(3);
+        enemy.setDirX(1); //Just move to the right
 
         // Define the apple object
         apple = new Apple();
@@ -55,6 +62,9 @@ public class GameScreen implements Screen {
 
         // Initialize the snake
         snake.initSnake(worldCenterX - snake.getHeadSprite().getWidth(), worldCenterY - snake.getHeadSprite().getHeight());
+
+        // Initialize the enemy
+        enemy.initEnemy(10,10);
 
         // Set position of apple randomly
         apple.randomizePosition(
@@ -169,7 +179,11 @@ public class GameScreen implements Screen {
                     isAppleColliding = false;
                 }
 
+                // Move enemy in same movement counter as player--global movement counter
+                enemy.moveHead(worldWidth,worldHeight);
+                enemy.moveBody();
             }
+
 
         }
     }
@@ -185,6 +199,9 @@ public class GameScreen implements Screen {
 
         // Draw snake
         snake.draw(game.batch);
+
+        // Draw enemies
+        enemy.draw(game.batch);
 
         // Draw apple
         apple.draw(game.batch);

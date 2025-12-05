@@ -23,6 +23,9 @@ public class Enemy {
 
     // Need phase for AI--later
 
+    // Need direction for movement
+    int dirX,dirY;
+
     public Enemy(int size){
         // Build the body texture
         Pixmap bodyMap = new Pixmap(1,1, Pixmap.Format.RGB888);
@@ -44,6 +47,10 @@ public class Enemy {
             bodySprites.add(segment);
             bodyRectangles.add(new Rectangle());
         }
+
+        // Stationary at spawn
+        dirX = 0;
+        dirY = 0;
     }
 
     public Sprite getHeadSprite(){
@@ -51,6 +58,12 @@ public class Enemy {
     }
 
     public Rectangle getHeadRectangle(){return bodyRectangles.get(0);}
+
+    public int getDirX(){return dirX;}
+    public int getDirY(){return dirY;}
+
+    public void setDirX(int move){dirX = move;}
+    public void setDirY(int move){dirY = move;}
 
     // Initializes the Enemy's body sprites and rectangles
     public void initEnemy(float xPos, float yPos){
@@ -84,8 +97,8 @@ public class Enemy {
         }
     }
 
-    // Method for moving the snake properly
-    public void moveHead(float dirX, float dirY, float upperBoundX, float upperBoundY){
+    // Method for moving the snake properly -- no need to take direction from game
+    public void moveHead(float upperBoundX, float upperBoundY){
         Sprite head = bodySprites.get(0);
         Rectangle headRect = bodyRectangles.get(0);
 
