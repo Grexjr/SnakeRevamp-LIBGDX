@@ -29,6 +29,9 @@ public class Enemy {
     // Need direction for movement
     int dirX,dirY;
 
+    // Timer for random turns
+    int timer,maxTimer;
+
     public Enemy(int size){
         // Build the body texture
         Pixmap bodyMap = new Pixmap(1,1, Pixmap.Format.RGB888);
@@ -54,6 +57,10 @@ public class Enemy {
         // Stationary at spawn
         dirX = 0;
         dirY = 0;
+
+        // Timer init
+        timer = 0;
+        maxTimer = RAND.nextInt(60,600);
     }
 
     public Sprite getHeadSprite(){
@@ -246,10 +253,34 @@ public class Enemy {
     }
 
 
+    // TODO: Add a random wander method that just has them randomly turn and interacts with their sight
+    // Random timer to turn when just moving regardless of sight
+    public void wander() {
+        System.out.println(timer + "/" + maxTimer);
+        timer += 1;
 
-
-
-
+        if (timer > maxTimer) {
+            if (dirX != 0) {
+                dirX = 0;
+                // Turn random direction
+                if (RAND.nextBoolean()) {
+                    dirY = 1;
+                } else {
+                    dirY = -1;
+                }
+            } else if (dirY != 0) {
+                dirY = 0;
+                // Turn random direction
+                if (RAND.nextBoolean()) {
+                    dirX = 1;
+                } else {
+                    dirX = -1;
+                }
+            }
+            timer = 0;
+            maxTimer = RAND.nextInt(60,600);
+        }
+    }
 
     // Draw the enemy method
     public void draw(SpriteBatch batch){

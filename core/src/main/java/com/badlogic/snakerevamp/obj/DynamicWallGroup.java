@@ -17,6 +17,14 @@ public class DynamicWallGroup {
         dynamicWalls = new ArrayList<>();
     }
 
+    public ArrayList<Rectangle> getRectangles() {
+        ArrayList<Rectangle> rects = new ArrayList<>();
+        for(Wall w : dynamicWalls){
+            rects.add(w.getRectangle());
+        }
+        return rects;
+    }
+
     // Initialize the walls
     public void initDynamicWalls(Random rand, int wallNum, float xBound, float yBound){
         for(int i = 0; i < wallNum; i++){

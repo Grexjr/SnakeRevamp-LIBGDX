@@ -189,6 +189,10 @@ public class GameScreen implements Screen {
             for(Rectangle r : outerWalls.getRectangles()){
                 enemy.turn(r);
             }
+            for(Rectangle r : dynamicWalls.getRectangles()){
+                enemy.turn(r);
+            }
+            enemy.wander();
 
 
         }
