@@ -179,6 +179,15 @@ public class Snake {
         );
     }
 
+    // Check overlap with its body segments for enemy colliding into player
+    public boolean checkCollision(Rectangle collider){
+        boolean collision = false;
+        for(Rectangle r : bodyRectangles){
+            if(r.overlaps(collider)) collision = true;
+        }
+        return collision;
+    }
+
     // Draw the snake method
     public void draw(SpriteBatch batch){
         for(Sprite s : bodySprites){

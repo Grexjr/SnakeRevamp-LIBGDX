@@ -4,9 +4,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.snakerevamp.obj.*;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class GameScreen implements Screen {
@@ -17,6 +19,9 @@ public class GameScreen implements Screen {
     private SnakeRevamp game;
 
     private Snake snake;
+
+    // Will eventually be arraylist
+    private ArrayList<Enemy> enemyList;
 
     private Apple apple;
 
@@ -33,6 +38,11 @@ public class GameScreen implements Screen {
 
         // Define the snake object
         snake = new Snake();
+
+        // Define the enemy object
+        enemyList = new ArrayList<>();
+        Enemy e = new Enemy(3);
+        enemyList.add(e);
 
         // Define the apple object
         apple = new Apple();
@@ -55,6 +65,10 @@ public class GameScreen implements Screen {
 
         // Initialize the snake
         snake.initSnake(worldCenterX - snake.getHeadSprite().getWidth(), worldCenterY - snake.getHeadSprite().getHeight());
+
+        // Initialize the enemy
+        enemyList.get(0).initEnemy(10,10);
+        enemyList.get(0).setDirX(1);
 
         // Set position of apple randomly
         apple.randomizePosition(
@@ -136,6 +150,13 @@ public class GameScreen implements Screen {
                         gameOver = outerWalls.checkCollision(snake.getHeadRectangle());
                         gameOver = dynamicWalls.checkCollision(snake.getHeadRectangle());
                     }
+
+                    if(!gameOver){
+                        // Code for running into enemy snake
+                        for(Enemy e : enemyList){
+                            gameOver = e.checkCollision(snake.getHeadRectangle());
+                        }
+                    }
                 }
 
                 // Move rest of body
@@ -169,6 +190,29 @@ public class GameScreen implements Screen {
                     isAppleColliding = false;
                 }
 
+                // Move enemy in same movement counter as player--global movement counter
+                for(Enemy e : enemyList){
+                    e.moveHead(worldWidth,worldHeight);
+                    e.moveBody();
+                }
+            }
+
+            for(Enemy e : enemyList){
+                e.castVision(4);
+                for(Rectangle r : outerWalls.getRectangles()){
+                    e.turn(r);
+                }
+                for(Rectangle r : dynamicWalls.getRectangles()){
+                    e.turn(r);
+                }
+                e.wander();
+            }
+
+            for(int i = enemyList.size() - 1; i == 0; i--){
+                if(snake.checkCollision(enemyList.get(i).getHeadRectangle())){
+                    //Need to remove
+                    enemyList.remove(enemyList.get(i));
+                }
             }
 
         }
@@ -185,6 +229,11 @@ public class GameScreen implements Screen {
 
         // Draw snake
         snake.draw(game.batch);
+
+        // Draw enemies
+        for(Enemy e : enemyList){
+            e.draw(game.batch);
+        }
 
         // Draw apple
         apple.draw(game.batch);

@@ -14,6 +14,14 @@ public class OuterWallGroup {
         outerWalls = new ArrayList<>();
     }
 
+    public ArrayList<Rectangle> getRectangles(){
+        ArrayList<Rectangle> rects = new ArrayList<>();
+        for(Wall w : outerWalls){
+            rects.add(w.getRectangle());
+        }
+        return rects;
+    }
+
     // Initialize the outer walls positions of sprites and rectangles
     public void initOuterWall(float xBound, float yBound){
         for (int i = 0; i < 2; i++) {
