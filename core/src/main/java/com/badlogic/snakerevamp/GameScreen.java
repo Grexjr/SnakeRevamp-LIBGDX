@@ -8,6 +8,7 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.snakerevamp.obj.*;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class GameScreen implements Screen {
@@ -20,7 +21,7 @@ public class GameScreen implements Screen {
     private Snake snake;
 
     // Will eventually be arraylist
-    private Enemy enemy;
+    private ArrayList<Enemy> enemyList;
 
     private Apple apple;
 
@@ -39,8 +40,9 @@ public class GameScreen implements Screen {
         snake = new Snake();
 
         // Define the enemy object
-        enemy = new Enemy(3);
-        enemy.setDirX(1); //Just move to the right
+        enemyList = new ArrayList<>();
+        Enemy e = new Enemy(3);
+        enemyList.add(e);
 
         // Define the apple object
         apple = new Apple();
@@ -65,7 +67,8 @@ public class GameScreen implements Screen {
         snake.initSnake(worldCenterX - snake.getHeadSprite().getWidth(), worldCenterY - snake.getHeadSprite().getHeight());
 
         // Initialize the enemy
-        enemy.initEnemy(10,10);
+        enemyList.get(0).initEnemy(10,10);
+        enemyList.get(0).setDirX(1);
 
         // Set position of apple randomly
         apple.randomizePosition(
@@ -150,7 +153,9 @@ public class GameScreen implements Screen {
 
                     if(!gameOver){
                         // Code for running into enemy snake
-                        gameOver = enemy.checkCollision(snake.getHeadRectangle());
+                        for(Enemy e : enemyList){
+                            gameOver = e.checkCollision(snake.getHeadRectangle());
+                        }
                     }
                 }
 
@@ -186,19 +191,29 @@ public class GameScreen implements Screen {
                 }
 
                 // Move enemy in same movement counter as player--global movement counter
-                enemy.moveHead(worldWidth,worldHeight);
-                enemy.moveBody();
+                for(Enemy e : enemyList){
+                    e.moveHead(worldWidth,worldHeight);
+                    e.moveBody();
+                }
             }
 
-            enemy.castVision(4);
-            for(Rectangle r : outerWalls.getRectangles()){
-                enemy.turn(r);
+            for(Enemy e : enemyList){
+                e.castVision(4);
+                for(Rectangle r : outerWalls.getRectangles()){
+                    e.turn(r);
+                }
+                for(Rectangle r : dynamicWalls.getRectangles()){
+                    e.turn(r);
+                }
+                e.wander();
             }
-            for(Rectangle r : dynamicWalls.getRectangles()){
-                enemy.turn(r);
-            }
-            enemy.wander();
 
+            for(int i = enemyList.size() - 1; i == 0; i--){
+                if(snake.checkCollision(enemyList.get(i).getHeadRectangle())){
+                    //Need to remove
+                    enemyList.remove(enemyList.get(i));
+                }
+            }
 
         }
     }
@@ -216,7 +231,9 @@ public class GameScreen implements Screen {
         snake.draw(game.batch);
 
         // Draw enemies
-        enemy.draw(game.batch);
+        for(Enemy e : enemyList){
+            e.draw(game.batch);
+        }
 
         // Draw apple
         apple.draw(game.batch);
