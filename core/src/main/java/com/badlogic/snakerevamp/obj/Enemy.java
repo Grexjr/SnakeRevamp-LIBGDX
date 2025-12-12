@@ -69,6 +69,8 @@ public class Enemy {
 
     public Rectangle getHeadRectangle(){return bodyRectangles.get(0);}
 
+    public ArrayList<Rectangle> getBodySprites(){return bodyRectangles;}
+
     public int getDirX(){return dirX;}
     public int getDirY(){return dirY;}
 
@@ -281,6 +283,15 @@ public class Enemy {
             maxTimer = RAND.nextInt(60,600);
         }
     }
+
+    public boolean checkCollision(Rectangle collider){
+        boolean collision = false;
+        for(Rectangle r : bodyRectangles){
+            if(r.overlaps(collider)) collision = true;
+        }
+        return collision;
+    }
+
 
     // Draw the enemy method
     public void draw(SpriteBatch batch){

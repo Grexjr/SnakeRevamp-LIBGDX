@@ -147,6 +147,11 @@ public class GameScreen implements Screen {
                         gameOver = outerWalls.checkCollision(snake.getHeadRectangle());
                         gameOver = dynamicWalls.checkCollision(snake.getHeadRectangle());
                     }
+
+                    if(!gameOver){
+                        // Code for running into enemy snake
+                        gameOver = enemy.checkCollision(snake.getHeadRectangle());
+                    }
                 }
 
                 // Move rest of body
