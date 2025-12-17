@@ -89,6 +89,21 @@ public class GameScreen implements Screen {
         // Set randomized positions of dynamic walls
         dynamicWalls.initDynamicWalls(RANDOM,55,worldWidth-2,worldHeight-2);
 
+        // Check to ensure it does not overlap with a dynamic wall
+        if(dynamicWalls.checkCollision(apple.getRectangle())){
+            apple.randomizePosition(
+                RANDOM.nextInt(1, Math.round(worldWidth-2)),
+                RANDOM.nextInt(1, Math.round(worldHeight-2))
+            );
+        }
+
+        if(outerWalls.checkCollision(apple.getRectangle())){
+            apple.randomizePosition(
+                RANDOM.nextInt(1, Math.round(worldWidth-2)),
+                RANDOM.nextInt(1, Math.round(worldHeight-2))
+            );
+        }
+
     }
 
     @Override
