@@ -13,6 +13,9 @@ import java.util.Random;
 
 public class GameScreen implements Screen {
 
+    private final String TITLE_STRING = "SNAKE EVOLVED";
+    private final String INSTRUCTIONS_STRING = "Press 'Space' to start. \n Press 'R' to restart";
+
     private final float MOVE_INTERVAL = 0.15f;
     private final Random RANDOM = new Random();
 
@@ -30,7 +33,7 @@ public class GameScreen implements Screen {
 
     private float dirX, dirY;
     private float moveTimer = 0f;
-    private boolean isAppleColliding = false, gameOver = false, gameStarted = false;
+    private boolean isAppleColliding = false, gameOver = false, gameStarted = false, isMoving = false;
     private int score;
 
     public GameScreen(SnakeRevamp game) {
@@ -89,6 +92,26 @@ public class GameScreen implements Screen {
         // Set randomized positions of dynamic walls
         dynamicWalls.initDynamicWalls(RANDOM,55,worldWidth-2,worldHeight-2);
 
+        // Check to ensure it does not overlap with a dynamic wall
+        if(dynamicWalls.checkCollision(apple.getRectangle())){
+            apple.randomizePosition(
+                RANDOM.nextInt(1, Math.round(worldWidth-2)),
+                RANDOM.nextInt(1, Math.round(worldHeight-2))
+            );
+        }
+
+        if(outerWalls.checkCollision(apple.getRectangle())){
+            apple.randomizePosition(
+                RANDOM.nextInt(1, Math.round(worldWidth-2)),
+                RANDOM.nextInt(1, Math.round(worldHeight-2))
+            );
+        }
+
+    }
+
+    public void restartGame(){
+        score = 0;
+        game.setScreen(new GameScreen(game));
     }
 
     @Override
@@ -100,30 +123,41 @@ public class GameScreen implements Screen {
 
     private void input() {
 
-        if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-            // set movement to right
-            dirX = 1;
-            dirY = 0;
-            // Set game to started because movement starts the game
-            gameStarted = true;
+        if(gameStarted && !gameOver){
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+                // set movement to right
+                dirX = 1;
+                dirY = 0;
+                isMoving = true;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+                // set movement to left
+                dirX = -1;
+                dirY = 0;
+                isMoving = true;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
+                // set movement to up
+                dirX = 0;
+                dirY = 1;
+                isMoving = true;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
+                // set movement to down
+                dirX = 0;
+                dirY = -1;
+                isMoving = true;
+            }
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-            // set movement to left
-            dirX = -1;
-            dirY = 0;
-            gameStarted = true;
+        else if(!gameStarted){
+            if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
+                gameStarted = true;
+            }
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.UP)) {
-            // set movement to up
-            dirX = 0;
-            dirY = 1;
-            gameStarted = true;
-        }
-        if (Gdx.input.isKeyPressed(Input.Keys.DOWN)) {
-            // set movement to down
-            dirX = 0;
-            dirY = -1;
-            gameStarted = true;
+        else if(gameOver){
+            if(Gdx.input.isKeyPressed(Input.Keys.R)){
+                restartGame();
+            }
         }
     }
 
@@ -131,7 +165,7 @@ public class GameScreen implements Screen {
         float worldWidth = game.viewport.getWorldWidth();
         float worldHeight = game.viewport.getWorldHeight();
 
-        if (!gameOver) {
+        if (!gameOver && gameStarted) {
             moveTimer += delta;
 
             if (moveTimer > MOVE_INTERVAL) {
@@ -140,8 +174,8 @@ public class GameScreen implements Screen {
                 // Move snake head
                 snake.moveHead(dirX, dirY, worldWidth, worldHeight);
 
-                // Run collision code if game is started
-                if (gameStarted) {
+                // Run collision code if movement has started
+                if (isMoving) {
                     // Code for running into body
                     gameOver = snake.runBodyCollisionCheck();
                     if(!gameOver)
@@ -220,6 +254,7 @@ public class GameScreen implements Screen {
 
     private void draw() {
 
+        float worldWidth = game.viewport.getWorldWidth();
         float worldHeight = game.viewport.getWorldHeight();
 
         ScreenUtils.clear(Color.BLACK);
@@ -227,25 +262,32 @@ public class GameScreen implements Screen {
         game.batch.setProjectionMatrix(game.viewport.getCamera().combined);
         game.batch.begin();
 
-        // Draw snake
-        snake.draw(game.batch);
-
-        // Draw enemies
-        for(Enemy e : enemyList){
-            e.draw(game.batch);
-        }
-
-        // Draw apple
-        apple.draw(game.batch);
-
         // Draw outer wall
         outerWalls.draw(game.batch);
 
-        // Draw dynamic walls
-        dynamicWalls.draw(game.batch);
+        if(gameStarted){
+            // Draw apple
+            apple.draw(game.batch);
 
-        // Draw score in top right
-        game.font.draw(game.batch, Integer.toString(score), 1, worldHeight);
+            // Draw snake
+            snake.draw(game.batch);
+
+            // Draw dynamic walls
+            dynamicWalls.draw(game.batch);
+
+            // Draw enemies
+            for(Enemy e : enemyList){
+                e.draw(game.batch);
+            }
+
+
+
+            // Draw score in top right
+            game.font.draw(game.batch, Integer.toString(score), 1, worldHeight);
+        } else {
+            game.font.draw(game.batch,TITLE_STRING,(worldWidth/2) - 10,worldHeight/2);
+            game.font.draw(game.batch,INSTRUCTIONS_STRING,(worldWidth/2) - 10,(worldHeight/2)-3);
+        }
 
         game.batch.end();
     }

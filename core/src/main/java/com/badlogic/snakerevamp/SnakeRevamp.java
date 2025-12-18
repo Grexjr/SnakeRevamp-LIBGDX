@@ -20,7 +20,7 @@ public class SnakeRevamp extends Game {
         viewport = new FitViewport(32,32);
 
         font.setUseIntegerPositions(false);
-        font.getData().setScale(viewport.getWorldHeight()/ Gdx.graphics.getHeight());
+        font.getData().setScale((viewport.getWorldHeight()/ Gdx.graphics.getHeight())*2);
 
         setScreen(new GameScreen(this));
     }
