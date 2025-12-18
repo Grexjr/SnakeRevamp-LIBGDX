@@ -109,6 +109,11 @@ public class GameScreen implements Screen {
 
     }
 
+    public void restartGame(){
+        score = 0;
+        game.setScreen(new GameScreen(game));
+    }
+
     @Override
     public void render(float delta) {
         input();
@@ -143,9 +148,15 @@ public class GameScreen implements Screen {
                 dirY = -1;
                 isMoving = true;
             }
-        } else {
+        }
+        else if(!gameStarted){
             if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
                 gameStarted = true;
+            }
+        }
+        else if(gameOver){
+            if(Gdx.input.isKeyPressed(Input.Keys.R)){
+                restartGame();
             }
         }
     }
